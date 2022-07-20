@@ -16,21 +16,81 @@ import android.widget.SeekBar
 import android.widget.Toast
 import androidx.databinding.DataBindingUtil
 import com.example.energybar.databinding.ActivityMainBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
     lateinit var binding: ActivityMainBinding
     var energyArray: ArrayList<Energy> = ArrayList()
+    private lateinit var appDb: AppDatabase
+    lateinit var barAdapter: BarAdapter
+    lateinit var adapter: MyAdapter
+
+    fun getResponse(){
+        GlobalScope.launch {
+            val response = appDb.energyDao().getAll() as ArrayList<Energy>
+
+            withContext(Dispatchers.Main){
+                if(response.size == 0){
+                    val en = Energy(null,1, 100, resources.getColor(R.color.teal_700))
+                    energyArray.add(en)
+                    GlobalScope.launch {
+                        appDb.energyDao().insert(en)
+                    }
+
+                }else{
+//                    energyArray = response
+                    energyArray.addAll(response.sortedBy { it.start })
+
+                }
+
+                adapter.notifyDataSetChanged()
+                barAdapter.notifyDataSetChanged()
+                Log.v("fasdf",response.toString())
+            }
+
+        }
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
-        energyArray.add(Energy(1, 100, resources.getColor(R.color.teal_700)))
+        appDb = AppDatabase.getDatabase(this)
 
-        val barAdapter = BarAdapter(this, energyArray)
-        val adapter = MyAdapter(this, energyArray, barAdapter)
+
+
+        getResponse()
+
+        barAdapter = BarAdapter(this, energyArray)
+        adapter = MyAdapter(this, energyArray, barAdapter)
+
         binding.listview.adapter = adapter
-
         binding.energyBar.adapter = barAdapter
+
+        binding.button.setOnClickListener {
+            GlobalScope.launch {
+                val ener = appDb.energyDao().getAll()
+                Log.v("fasfdas", ener.toString())
+            }
+        }
+    }
+
+    fun writeDate(){
+        val start = 1
+        val end =3
+        val energy = Energy(null,start, end, 90)
+        GlobalScope.launch(Dispatchers.IO){
+            appDb.energyDao().insert(energy)
+        }
+
+        //delete
+        GlobalScope.launch {
+            appDb.energyDao().deleteAll()
+        }
     }
 }
 
