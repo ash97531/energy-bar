@@ -70,27 +70,6 @@ class MainActivity : AppCompatActivity() {
 
         binding.listview.adapter = adapter
         binding.energyBar.adapter = barAdapter
-
-        binding.button.setOnClickListener {
-            GlobalScope.launch {
-                val ener = appDb.energyDao().getAll()
-                Log.v("fasfdas", ener.toString())
-            }
-        }
-    }
-
-    fun writeDate(){
-        val start = 1
-        val end =3
-        val energy = Energy(null,start, end, 90)
-        GlobalScope.launch(Dispatchers.IO){
-            appDb.energyDao().insert(energy)
-        }
-
-        //delete
-        GlobalScope.launch {
-            appDb.energyDao().deleteAll()
-        }
     }
 }
 
