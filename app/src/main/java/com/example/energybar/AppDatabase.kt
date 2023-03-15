@@ -17,7 +17,7 @@ abstract class AppDatabase: RoomDatabase() {
 
         fun getDatabase(context: Context): AppDatabase{
             
-            //hello world rygyuty
+            //hello world rygyu
             val tempInstance = INSTANCE
             if(tempInstance != null){
                 return tempInstance
